@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: rundeck
+      POSTGRES_USER: rundeck
+      POSTGRES_PASSWORD: rundeckpassword
+    expose:
+      - 5432
+
+  rundeck:
+    build:
+      context: .
+      dockerfile: Dockerfile.rundeck
+    restart: unless-stopped
+    ports:
+      - "4440:4440"
+    depends_on:
+      - db
+    environment:
+      RUNDECK_GRAILS_URL: http://localhost:4440
+      RUNDECK_DATABASE_DRIVER: org.postgresql.Driver
+      RUNDECK_DATABASE_URL: jdbc:postgresql://db:5432/rundeck
+      RUNDECK_DATABASE_USERNAME: rundeck
+      RUNDECK_DATABASE_PASSWORD: rundeckpassword
+      GOOGLE_APPLICATION_CREDENTIALS: /etc/rundeck/service-account.json
+      PROJECT_ID: ${GCP_PROJECT_ID:-}
+      ARTIFACT_REGISTRY: ${ARTIFACT_REGISTRY_URL:-}
+      GITHUB_TOKEN: ${GITHUB_API_TOKEN:-}
+      WEBHOOK_SECRET: ${RUNDECK_WEBHOOK_SECRET:-}
+    volumes:
+      - rundeck-data:/home/rundeck/server/data
+      - rundeck-logs:/home/rundeck/var/logs
+      - workspace:/tmp/workspace
+      - gcloud-config:/root/.config/gcloud
+      - ./scripts:/scripts:ro
+      - ./templates:/templates:ro
+      - ./gcloud/service-account.json:/etc/rundeck/service-account.json:ro
+
+volumes:
+  postgres-data:
+  rundeck-data:
+  rundeck-logs:
+  workspace:
+  gcloud-config:

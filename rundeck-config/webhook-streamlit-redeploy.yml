@@ -1,0 +1,36 @@
+- defaultTab: nodes
+  description: Webhook-triggered automatic redeployment of Streamlit applications
+  executionEnabled: true
+  id: webhook-streamlit-redeploy
+  loglevel: INFO
+  name: Webhook Streamlit Redeploy
+  nodeFilterEditable: false
+  plugins:
+    ExecutionLifecycle: {}
+  scheduleEnabled: false
+  sequence:
+    commands:
+    - description: Process webhook payload and trigger redeployment
+      exec: |
+        echo "Processing GitHub webhook for automatic redeployment..."
+        
+        # Set webhook payload from job context or environment
+        export WEBHOOK_PAYLOAD="${option.webhook_payload}"
+        export HTTP_X_HUB_SIGNATURE_256="${option.webhook_signature}"
+        
+        # Execute webhook redeployment script
+        /scripts/webhook-redeploy.sh
+    keepgoing: false
+    strategy: node-first
+  options:
+  - name: webhook_payload
+    description: GitHub webhook JSON payload
+    required: true
+    type: text
+    secure: false
+  - name: webhook_signature
+    description: GitHub webhook signature header (X-Hub-Signature-256)
+    required: false
+    type: text
+    secure: true
+  uuid: 87654321-4321-8765-cba9-876543210987

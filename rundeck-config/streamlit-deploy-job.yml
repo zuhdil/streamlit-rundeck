@@ -1,0 +1,108 @@
+- defaultTab: nodes
+  description: Deploy Streamlit applications from GitHub to Google Cloud Run with automatic CI/CD setup
+  executionEnabled: true
+  id: streamlit-deploy
+  loglevel: INFO
+  name: Deploy Streamlit App
+  nodeFilterEditable: false
+  plugins:
+    ExecutionLifecycle: {}
+  scheduleEnabled: true
+  sequence:
+    commands:
+    - description: Initialize database schema if needed
+      exec: /scripts/init-database.sh
+    - description: Validate input parameters
+      exec: |
+        echo "Validating deployment parameters..."
+        
+        # Validate GitHub URL format
+        if [[ ! "${option.github_url}" =~ ^https://github\.com/.+/.+ ]]; then
+          echo "ERROR: Invalid GitHub URL format. Must be https://github.com/user/repo"
+          exit 1
+        fi
+        
+        # Validate app name format
+        if [[ ! "${option.app_name}" =~ ^[a-z0-9-]+$ ]]; then
+          echo "ERROR: Invalid app name. Use only lowercase letters, numbers, and hyphens"
+          exit 1
+        fi
+        
+        # Validate main file extension
+        if [[ ! "${option.main_file}" =~ \.py$ ]]; then
+          echo "ERROR: Main file must be a Python file (.py extension)"
+          exit 1
+        fi
+        
+        echo "All parameters validated successfully"
+    - description: Execute Streamlit deployment
+      exec: /scripts/deploy-streamlit.sh
+      env:
+        GITHUB_URL: ${option.github_url}
+        MAIN_FILE: ${option.main_file}
+        SECRETS_CONTENT: ${option.secrets_content}
+        APP_NAME: ${option.app_name}
+        TARGET_BRANCH: ${option.target_branch}
+        REGION: ${option.region}
+        MEMORY: ${option.memory}
+        CPU: ${option.cpu}
+    keepgoing: false
+    strategy: node-first
+  options:
+  - name: github_url
+    description: GitHub repository URL (https://github.com/user/repo)
+    required: true
+    type: text
+    validation: '^https://github\.com/.+/.+$'
+  - name: main_file
+    description: Main Python file for the Streamlit application
+    required: true
+    type: text
+    value: app.py
+  - name: app_name  
+    description: Unique name for the Cloud Run service (lowercase, hyphens only)
+    required: true
+    type: text
+    validation: '^[a-z0-9-]+$'
+  - name: target_branch
+    description: Git branch to deploy (leave empty to auto-detect default branch)
+    required: false
+    type: text
+  - name: secrets_content
+    description: Contents of .streamlit/secrets.toml (base64 encoded)
+    required: false
+    type: securetext
+    secure: true
+  - name: region
+    description: Google Cloud region for deployment
+    required: true
+    type: select
+    values:
+    - us-central1
+    - us-east1  
+    - us-west1
+    - europe-west1
+    - europe-west4
+    - asia-southeast1
+    - asia-northeast1
+    value: us-central1
+  - name: memory
+    description: Container memory limit
+    required: false
+    type: select
+    values:
+    - 512Mi
+    - 1Gi
+    - 2Gi
+    - 4Gi
+    value: 1Gi
+  - name: cpu
+    description: Container CPU allocation
+    required: false
+    type: select  
+    values:
+    - "1"
+    - "2"
+    - "4"
+    value: "1"
+  uuid: 12345678-1234-5678-9abc-123456789012

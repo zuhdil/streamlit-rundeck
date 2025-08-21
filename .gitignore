@@ -1,0 +1,16 @@
+# Environment variables
+.env
+
+# Google Cloud service account key
+gcloud/service-account.json
+
+# Docker volumes
+volumes/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
