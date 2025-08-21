@@ -22,15 +22,11 @@ A comprehensive CI/CD platform for deploying Streamlit applications from GitHub 
    - Artifact Registry API
    - Container Registry API
 
-2. Google Cloud Service Account with permissions:
-   - Artifact Registry Writer
-   - Cloud Run Admin
-   - Service Usage Consumer
+2. Google Cloud Service Account with required permissions
+   - See [Google Cloud Setup Guide](docs/google-cloud-setup.md) for detailed instructions
 
-3. GitHub Personal Access Token with:
-   - `repo` scope for private repositories
-   - `public_repo` scope for public repositories
-   - `admin:repo_hook` scope for webhook management
+3. GitHub Personal Access Token with required scopes
+   - See [GitHub Setup Guide](docs/github-setup.md) for detailed instructions
 
 ### Setup
 
@@ -40,24 +36,26 @@ A comprehensive CI/CD platform for deploying Streamlit applications from GitHub 
    cd try-rundeck
    ```
 
-2. **Configure environment**:
+2. **Complete Google Cloud setup**:
+   - Follow the [Google Cloud Setup Guide](docs/google-cloud-setup.md)
+   - This will create your service account and download the key to `gcloud/service-account.json`
+
+3. **Complete GitHub setup**:
+   - Follow the [GitHub Setup Guide](docs/github-setup.md)
+   - This will create your Personal Access Token
+
+4. **Configure environment**:
    ```bash
    cp .env.example .env
-   # Edit .env with your configuration
+   # Edit .env with your Google Cloud and GitHub configuration
    ```
 
-3. **Add service account key**:
-   ```bash
-   # Place your Google Cloud service account JSON key at:
-   gcloud/service-account.json
-   ```
-
-4. **Start the system**:
+5. **Start the system**:
    ```bash
    docker compose up -d
    ```
 
-5. **Access Rundeck**:
+6. **Access Rundeck**:
    - URL: http://localhost:4440
    - Default credentials: admin/admin
 
