@@ -5,18 +5,46 @@ This guide provides step-by-step instructions for creating a GitHub Personal Acc
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)
-2. [Create Personal Access Token (Classic)](#create-personal-access-token-classic)
-3. [Create Fine-Grained Personal Access Token](#create-fine-grained-personal-access-token)
-4. [Configure Token in Environment](#configure-token-in-environment)
-5. [Test Token Permissions](#test-token-permissions)
-6. [Security Best Practices](#security-best-practices)
-7. [Troubleshooting](#troubleshooting)
+2. [Personal vs Organization Accounts](#personal-vs-organization-accounts)
+3. [Create Personal Access Token (Classic)](#create-personal-access-token-classic)
+4. [Create Fine-Grained Personal Access Token](#create-fine-grained-personal-access-token)
+5. [Organization Account Setup](#organization-account-setup)
+6. [Configure Token in Environment](#configure-token-in-environment)
+7. [Test Token Permissions](#test-token-permissions)
+8. [Security Best Practices](#security-best-practices)
+9. [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
 
 - GitHub account with access to repositories you want to deploy
 - Repository permissions (owner or admin access for webhook management)
-- Access to organization repositories (if deploying org-owned repos)
+- For organization repositories: appropriate organization membership and permissions
+
+## Personal vs Organization Accounts
+
+### Personal Account Repositories
+- **Control**: You have full control over your personal repositories
+- **Token Creation**: Standard process with your personal settings
+- **Permissions**: Direct access to all your repositories
+- **Webhooks**: Can create webhooks on any repository you own
+
+### Organization Account Repositories
+- **Additional Requirements**: Organization-level policies and approvals may apply
+- **SSO Requirements**: May require Single Sign-On (SSO) authentication
+- **Third-party Access**: Organization may restrict third-party application access
+- **Admin Approval**: Organization owners may need to approve tokens
+- **Member Permissions**: Your role in the organization affects repository access
+
+### Key Differences for Organizations
+
+| Aspect | Personal Account | Organization Account |
+|--------|------------------|---------------------|
+| Token Approval | Immediate | May require org admin approval |
+| SSO | Not required | Often required |
+| Repository Access | All owned repos | Based on org membership role |
+| Webhook Creation | Direct access | Requires admin/write permissions |
+| Token Expiration | Your choice | May be enforced by org policy |
+| Third-party Apps | Your decision | Subject to org restrictions |
 
 ## Create Personal Access Token (Classic)
 
@@ -60,6 +88,8 @@ This guide provides step-by-step instructions for creating a GitHub Personal Acc
 3. The token will look like: `ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
 4. **You cannot see this token again** - save it now!
 
+**Note for Organization Repositories**: If you plan to access organization repositories, you may need additional approval steps (see [Organization Account Setup](#organization-account-setup)).
+
 ## Create Fine-Grained Personal Access Token
 
 Fine-grained tokens provide more granular permissions and are recommended for enhanced security.
@@ -98,6 +128,129 @@ Fine-grained tokens provide more granular permissions and are recommended for en
 1. Click "Generate token"
 2. Copy and save the token securely
 3. Fine-grained tokens start with `github_pat_`
+
+**Note for Organization Repositories**: Fine-grained tokens may require organization approval and SSO authentication before they can access organization resources.
+
+## Organization Account Setup
+
+If you're working with repositories owned by a GitHub organization, additional setup steps are required.
+
+### Step 1: Check Organization Policies
+
+1. Navigate to your organization's page: `https://github.com/YOUR_ORGANIZATION`
+2. Check if the organization has any of these restrictions:
+   - Third-party application access restrictions
+   - SSO requirements
+   - Personal access token policies
+
+### Step 2: Verify Your Organization Role
+
+Your role in the organization determines your permissions:
+
+- **Owner**: Full access to all repositories and settings
+- **Member**: Access based on repository permissions
+- **Outside Collaborator**: Limited to specific repositories
+
+Check your role:
+1. Go to `https://github.com/orgs/YOUR_ORGANIZATION/people`
+2. Find your username and check your role
+
+### Step 3: Enable SSO for Your Token (if required)
+
+If your organization uses SSO:
+
+1. After creating your token, go to your token settings
+2. Find the organization in the "Organization access" section
+3. Click "Enable SSO" next to the organization name
+4. Complete the SSO authentication process
+5. Your token will now have access to organization repositories
+
+### Step 4: Request Organization Approval (if required)
+
+Some organizations require approval for personal access tokens:
+
+1. After creating your token, you may see a pending approval status
+2. Contact your organization administrator
+3. Provide them with:
+   - Token name and purpose
+   - Required permissions (repo access, webhook management)
+   - Duration of access needed
+
+### Step 5: Test Organization Access
+
+```bash
+# Test access to organization repositories
+curl -H "Authorization: token $GITHUB_TOKEN" \
+     https://api.github.com/orgs/YOUR_ORGANIZATION/repos
+
+# Check your membership status
+curl -H "Authorization: token $GITHUB_TOKEN" \
+     https://api.github.com/orgs/YOUR_ORGANIZATION/members/YOUR_USERNAME
+```
+
+### Organization-Specific Token Configuration
+
+For organization repositories, you may need to configure additional settings:
+
+**Classic Tokens for Organizations:**
+- ✅ `repo` - Full control of private repositories
+- ✅ `admin:repo_hook` - Full control of repository hooks
+- ✅ `read:org` - Read org and team membership (recommended)
+- ✅ `admin:org_hook` - Full control of organization hooks (if needed)
+
+**Fine-Grained Tokens for Organizations:**
+- **Organization**: Select the specific organization
+- **Repository access**: Choose specific repositories or all organization repositories
+- **Organization permissions**: 
+  - **Members**: Read (to verify membership)
+  - **Metadata**: Read (to access organization information)
+
+### Common Organization Issues and Solutions
+
+**Issue 1: SSO Not Enabled**
+```bash
+# Error: "Resource protected by organization SAML enforcement"
+# Solution: Enable SSO for your token (see Step 3 above)
+```
+
+**Issue 2: Insufficient Organization Permissions**
+```bash
+# Error: "Must have admin rights to Repository"
+# Solution: Request admin access from organization owner, or ask them to create webhooks
+```
+
+**Issue 3: Third-party App Restrictions**
+```bash
+# Error: "Third-party application access policy"
+# Solution: Request organization admin to whitelist the application or grant exception
+```
+
+**Issue 4: Token Not Approved**
+```bash
+# Error: "Personal access token access to this organization has not been approved"
+# Solution: Wait for organization admin approval or contact them directly
+```
+
+### Alternative: GitHub Apps for Organizations
+
+For large organizations, consider using GitHub Apps instead of personal access tokens:
+
+1. **Benefits**:
+   - Better security and audit trail
+   - No personal token dependency
+   - Organization-level installation
+   - Fine-grained permissions
+
+2. **Setup**:
+   - Organization admin creates GitHub App
+   - Installs app on required repositories
+   - Provides app credentials instead of personal token
+
+3. **Configuration**:
+   ```bash
+   # Use GitHub App authentication instead of token
+   # This requires additional setup in the deployment scripts
+   ```
 
 ## Configure Token in Environment
 
@@ -277,21 +430,48 @@ Rate limits:
 - **Fine-grained tokens**: 5,000 requests per hour
 - **Unauthenticated**: 60 requests per hour
 
-### Organization Repositories
+### Organization-Specific Troubleshooting
 
-For organization-owned repositories:
-
-1. **Organization Settings**: The organization may need to approve personal access tokens
-2. **SSO Requirements**: Some organizations require SSO authentication for tokens
-3. **Third-party Access**: Check if third-party access restrictions apply
-
+**Check Organization Settings:**
 ```bash
-# Check if SSO is required
+# Check organization policies
 curl -H "Authorization: token $GITHUB_TOKEN" \
      https://api.github.com/orgs/ORGANIZATION_NAME
 
-# Look for "two_factor_requirement_enabled" in response
+# Check if SSO is required (look for SAML/SSO settings)
+curl -H "Authorization: token $GITHUB_TOKEN" \
+     https://api.github.com/orgs/ORGANIZATION_NAME/interaction-limits
+
+# List organization repositories you have access to
+curl -H "Authorization: token $GITHUB_TOKEN" \
+     https://api.github.com/orgs/ORGANIZATION_NAME/repos?type=member
 ```
+
+**Verify Token Organization Access:**
+```bash
+# Check token's organization access
+curl -H "Authorization: token $GITHUB_TOKEN" -I \
+     https://api.github.com/orgs/ORGANIZATION_NAME/repos | \
+     grep -i "x-oauth-scopes"
+
+# Test specific repository access
+curl -H "Authorization: token $GITHUB_TOKEN" \
+     https://api.github.com/repos/ORGANIZATION_NAME/REPO_NAME
+```
+
+**Common Organization Error Messages:**
+
+1. **"Resource protected by organization SAML enforcement"**
+   - Solution: Enable SSO for your token in token settings
+
+2. **"Although you appear to have the correct authorization credentials, the organization has enabled OAuth App access restrictions"**
+   - Solution: Request organization admin to approve third-party access
+
+3. **"Personal access token access to this organization has not been approved by an organization owner"**
+   - Solution: Request approval from organization owner
+
+4. **"Must have admin rights to Repository"**
+   - Solution: Request admin/write access to repository or ask admin to create webhooks
 
 ## Token Management Script
 
@@ -350,12 +530,39 @@ chmod +x github-token-test.sh
 ./github-token-test.sh "your_token" "username/repository"
 ```
 
+## Organization Setup Checklist
+
+For organization repositories, ensure you have completed:
+
+### Before Token Creation
+- [ ] Verified your role in the organization (Member/Owner)
+- [ ] Checked organization policies for third-party access restrictions
+- [ ] Confirmed SSO requirements with organization admin
+- [ ] Verified you have appropriate repository permissions
+
+### After Token Creation
+- [ ] Enabled SSO for your token (if required)
+- [ ] Requested organization approval (if required)
+- [ ] Tested access to organization repositories
+- [ ] Verified webhook creation permissions on target repositories
+- [ ] Documented any organization-specific requirements
+
+### For Organization Admins
+If you're setting this up for your organization, consider:
+- [ ] Creating organization-wide policies for token management
+- [ ] Setting up GitHub Apps instead of personal tokens
+- [ ] Documenting approved third-party applications
+- [ ] Establishing token rotation schedules
+- [ ] Setting up audit logging for repository access
+
 ## Summary
 
 After completing this setup, you should have:
 
 ✅ GitHub Personal Access Token created  
 ✅ Token configured with appropriate scopes  
+✅ Organization requirements met (if applicable)  
+✅ SSO enabled and approvals obtained (if required)  
 ✅ Token added to environment variables  
 ✅ Token permissions tested and verified  
 ✅ Security best practices implemented  
