@@ -231,14 +231,14 @@ gcloud projects get-iam-policy $PROJECT_ID \
 8. **Important**: Rename the file to `service-account.json`
 9. Move the file to the `gcloud/` directory in your project:
    ```bash
-   mv ~/Downloads/PROJECT_ID-*.json /path/to/try-rundeck/gcloud/service-account.json
+   mv ~/Downloads/PROJECT_ID-*.json /path/to/streamlit-rundeck/gcloud/service-account.json
    ```
 
 ### Option 2: Generate Key (gcloud CLI)
 
 ```bash
 # Navigate to your project directory
-cd /path/to/try-rundeck
+cd /path/to/streamlit-rundeck
 
 # Create service account key
 gcloud iam service-accounts keys create gcloud/service-account.json \

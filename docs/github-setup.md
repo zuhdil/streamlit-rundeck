@@ -258,7 +258,7 @@ For large organizations, consider using GitHub Apps instead of personal access t
 
 ```bash
 # Navigate to your project directory
-cd /path/to/try-rundeck
+cd /path/to/streamlit-rundeck
 
 # Edit .env file
 nano .env

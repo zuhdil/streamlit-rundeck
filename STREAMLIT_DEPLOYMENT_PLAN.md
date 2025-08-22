@@ -314,7 +314,7 @@ sequence:
 ## File Structure
 
 ```
-try-rundeck/
+streamlit-rundeck/
 ├── compose.yml                              # Updated Docker Compose
 ├── scripts/
 │   ├── deploy-streamlit.sh                  # Main deployment script

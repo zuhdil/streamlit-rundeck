@@ -33,7 +33,7 @@ A comprehensive CI/CD platform for deploying Streamlit applications from GitHub 
 1. **Clone the repository**:
    ```bash
    git clone <repository-url>
-   cd try-rundeck
+   cd streamlit-rundeck
    ```
 
 2. **Complete Google Cloud setup**:
@@ -126,7 +126,7 @@ After initial deployment:
 ### File Structure
 
 ```
-try-rundeck/
+streamlit-rundeck/
 ├── compose.yml                    # Docker Compose configuration
 ├── Dockerfile.rundeck             # Extended Rundeck image
 ├── scripts/                       # Deployment and management scripts
