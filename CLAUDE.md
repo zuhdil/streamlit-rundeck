@@ -4,29 +4,35 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This repository contains a Docker Compose configuration for running Rundeck, an open-source automation service with web console, command line tools, and WebAPI. The setup includes:
+This is a comprehensive CI/CD platform for deploying Streamlit applications from GitHub repositories to Google Cloud Run with automatic webhook-based redeployment. The system includes:
 
-- **Rundeck**: Job scheduler and runbook automation (version 5.14.1)
-- **PostgreSQL**: Database backend (version 17)
+- **Rundeck**: Job orchestration and web interface (version 5.14.1)
+- **PostgreSQL**: Database backend for deployment metadata (version 17)
+- **Google Cloud SDK**: Cloud Run and Artifact Registry integration
+- **Docker**: Container runtime for building Streamlit applications
+- **GitHub Integration**: Webhook-based continuous deployment
 
 ## Common Commands
 
-### Starting the Environment
+### Environment Management
 ```bash
 # Start all services in detached mode
 docker compose up -d
 
-# Start with logs visible
+# Start with logs visible (useful for debugging)
 docker compose up
 
 # Stop all services
 docker compose down
 
-# Stop and remove volumes (destructive)
+# Stop and remove volumes (destructive - loses all deployment data)
 docker compose down -v
+
+# Restart specific service
+docker compose restart rundeck
 ```
 
-### Managing Services
+### Service Monitoring
 ```bash
 # View running containers
 docker compose ps
@@ -37,53 +43,117 @@ docker compose logs db
 
 # Follow logs in real-time
 docker compose logs -f rundeck
+```
 
-# Restart a specific service
-docker compose restart rundeck
+### Development & Testing
+```bash
+# Test deployment script directly
+./scripts/deploy-streamlit.sh
+
+# Validate webhook payload
+./scripts/validate-webhook.sh
+
+# Initialize database schema
+./scripts/init-database.sh
+
+# Check deployment metadata
+./scripts/get-deployment.sh
+
+# Clean up workspace
+./scripts/cleanup-workspace.sh
 ```
 
 ### Accessing the Application
 - **Rundeck Web Interface**: http://localhost:4440
-- **Database**: localhost:5432 (exposed only to Docker network by default)
+- **Default Credentials**: admin/admin
+- **Database**: localhost:5432 (internal Docker network only)
 
 ## Architecture
 
-### Service Configuration
-- **Database Service (`db`)**:
-  - Uses official PostgreSQL 17 image
-  - Database name: `rundeck`
-  - User/Password: `rundeck`/`rundeckpassword`
-  - Data persisted in `postgres-data` volume
+### Core Components
+- **Rundeck Service**: Extended with Google Cloud SDK, Docker, Git, and custom deployment scripts
+- **PostgreSQL Database**: Stores deployment metadata including webhook configurations
+- **Deployment Scripts**: Shell scripts in `scripts/` directory handling the complete CI/CD pipeline
+- **Volume Mounts**: Workspace for temporary processing, persistent data storage
 
-- **Rundeck Service (`rundeck`)**:
-  - Uses official Rundeck 5.14.1 image  
-  - Depends on database service
-  - Web interface on port 4440
-  - Data and logs persisted in separate volumes (`rundeck-data`, `rundeck-logs`)
+### Key Integrations
+- **GitHub API**: Repository cloning, webhook creation and management
+- **Google Artifact Registry**: Container image storage
+- **Google Cloud Run**: Application hosting platform
+- **Docker Registry**: Local container building and pushing
 
-### Data Persistence
-Three named volumes ensure data persistence across container restarts:
-- `postgres-data`: PostgreSQL database files
-- `rundeck-data`: Rundeck server data
-- `rundeck-logs`: Rundeck application logs
+### File Structure
+```
+streamlit-rundeck/
+├── compose.yml                    # Docker Compose configuration
+├── Dockerfile.rundeck             # Extended Rundeck image with required tools
+├── scripts/                       # Deployment automation scripts
+│   ├── deploy-streamlit.sh        # Main deployment logic
+│   ├── create-webhook.sh          # GitHub webhook creation
+│   ├── webhook-redeploy.sh        # Webhook-triggered redeployment
+│   ├── store-deployment.sh        # Deployment metadata storage
+│   ├── get-deployment.sh          # Metadata retrieval
+│   └── validate-*.sh              # Input validation scripts
+├── templates/                     # Dockerfile templates for Streamlit apps
+├── rundeck-config/                # Rundeck job definitions and access control
+├── sql/                          # Database schema for deployment tracking
+└── gcloud/                       # Service account credentials
+```
 
-### Environment Variables
-Key configuration is handled through environment variables in the compose file:
-- Database connection settings
-- Rundeck URL configuration
-- Database driver specification
+### Database Schema
+The system tracks deployments in PostgreSQL tables:
+- `deployments`: Main deployment metadata with webhook IDs and branch tracking
+- `deployment_history`: Audit trail for all deployment activities
 
-## Development Notes
+### Environment Configuration
+Requires `.env` file with:
+- `GCP_PROJECT_ID`: Google Cloud Project ID
+- `ARTIFACT_REGISTRY_URL`: Container registry URL
+- `GITHUB_API_TOKEN`: GitHub API token with webhook permissions
+- `RUNDECK_WEBHOOK_SECRET`: Secret for webhook payload validation
 
-Since this is a Docker Compose infrastructure setup rather than a code development project, most work involves:
-- Modifying service configurations in `compose.yml`
-- Adding new services or dependencies
-- Adjusting environment variables and volume mounts
-- Networking configuration between services
+Create from template:
+```bash
+cp .env.example .env
+# Edit .env with your configuration values
+```
+
+## Development Guidelines
+
+### Script Development
+- All scripts in `scripts/` must include comprehensive error handling
+- Use structured logging for debugging deployment issues
+- Validate all user inputs before processing
+- Follow the existing parameter passing conventions
+
+### Security Requirements
+- Never commit service account keys or tokens
+- All secrets handled through Rundeck's secure input system
+- Webhook payloads validated with HMAC-SHA256 signatures
+- Input sanitization for all user-provided parameters
+
+### Testing Approach
+- Test with simple Streamlit applications first
+- Verify webhook creation and automatic redeployment
+- Test multi-branch deployment scenarios
+- Validate access control permissions for different user roles
+
+### Deployment Workflow Understanding
+1. **Initial Deployment**: User submits job through Rundeck interface
+2. **Repository Processing**: Code cloned, Dockerfile generated, container built
+3. **Cloud Deployment**: Image pushed to registry, deployed to Cloud Run
+4. **Webhook Setup**: GitHub webhook created for target branch
+5. **Continuous Deployment**: Code pushes trigger automatic redeployments
 
 ## Git Commit Guidelines
 
-When committing changes to this repository:
 - Use short, descriptive commit messages
 - Do not include signatures or additional metadata in commit messages
 - Focus on what was changed, not why or how
+- Test deployment functionality before committing infrastructure changes
+
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.

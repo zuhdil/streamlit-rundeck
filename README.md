@@ -59,6 +59,18 @@ A comprehensive CI/CD platform for deploying Streamlit applications from GitHub 
    - URL: http://localhost:4440
    - Default credentials: admin/admin
 
+7. **Create the Streamlit project**:
+   - Click the "+" button or "New Project" link on the Rundeck home page
+   - Project Name: `streamlit-deployments`
+   - Description: `Streamlit Application Deployment Pipeline for Data Scientists`
+   - Click "Create"
+
+8. **Import job definitions**:
+   - Navigate to the `streamlit-deployments` project
+   - In the Jobs section, click **"Upload a Job definition"**
+   - Upload `rundeck-config/streamlit-deploy-job.yml`
+   - Repeat to upload `rundeck-config/webhook-streamlit-redeploy.yml`
+
 ### Environment Variables
 
 Create a `.env` file with the following variables:
