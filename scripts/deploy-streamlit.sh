@@ -18,6 +18,7 @@ LOG_FILE="/tmp/deployment.log"
 : "${ARTIFACT_REGISTRY:?ARTIFACT_REGISTRY is required}"
 
 # Optional environment variables
+SECRETS_FILE="${SECRETS_FILE:-}"
 SECRETS_CONTENT="${SECRETS_CONTENT:-}"
 TARGET_BRANCH="${TARGET_BRANCH:-}"
 REGION="${DEFAULT_REGION:-us-central1}"
@@ -128,17 +129,27 @@ EXPOSE 8080
 CMD ["streamlit", "run", "$MAIN_FILE", "--server.port=8080", "--server.address=0.0.0.0", "--server.headless=true"]
 EOF
 
-# Step 5: Create secrets file if provided
+# Step 5: Process secrets (from file upload or direct content)
+if [[ -n "$SECRETS_FILE" ]] && [[ -f "$SECRETS_FILE" ]]; then
+    log "Step 5: Processing uploaded secrets file"
+    # Read file content and assign to SECRETS_CONTENT for database storage and webhook reuse
+    SECRETS_CONTENT=$(cat "$SECRETS_FILE" 2>/dev/null || echo "")
+elif [[ -n "$SECRETS_CONTENT" ]]; then
+    log "Step 5: Processing provided secrets content"
+fi
+
+# Trim leading and trailing whitespace from secrets content
 if [[ -n "$SECRETS_CONTENT" ]]; then
-    # Trim leading and trailing whitespace
     SECRETS_CONTENT=$(echo "$SECRETS_CONTENT" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
     
     if [[ -n "$SECRETS_CONTENT" ]]; then
-        log "Step 5: Creating secrets configuration"
+        log "Creating secrets configuration"
         mkdir -p .streamlit
         echo "$SECRETS_CONTENT" > .streamlit/secrets.toml
+        log "Secrets configuration created successfully"
     else
-        log "Step 5: Secrets content was empty after trimming, skipping"
+        log "Secrets content was empty after trimming, skipping"
+        SECRETS_CONTENT=""
     fi
 else
     log "Step 5: No secrets provided, skipping"

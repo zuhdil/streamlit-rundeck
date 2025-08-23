@@ -40,7 +40,7 @@
       env:
         GITHUB_URL: ${option.github_url}
         MAIN_FILE: ${option.main_file}
-        SECRETS_CONTENT: ${option.secrets_content}
+        SECRETS_FILE: ${option.secrets_file}
         APP_NAME: ${option.app_name}
         TARGET_BRANCH: ${option.target_branch}
     keepgoing: false
@@ -65,9 +65,8 @@
     required: true
     type: text
     validation: '^[a-z0-9-]+$'
-  - name: secrets_content
-    description: Contents of .streamlit/secrets.toml (TOML format multiline text)
+  - name: secrets_file
+    description: Upload .streamlit/secrets.toml file (optional)
     required: false
-    type: text
-    multiline: true
+    type: file
   uuid: 12345678-1234-5678-9abc-123456789012
