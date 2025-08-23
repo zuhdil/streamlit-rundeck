@@ -43,9 +43,6 @@
         SECRETS_CONTENT: ${option.secrets_content}
         APP_NAME: ${option.app_name}
         TARGET_BRANCH: ${option.target_branch}
-        REGION: ${option.region}
-        MEMORY: ${option.memory}
-        CPU: ${option.cpu}
     keepgoing: false
     strategy: node-first
   options:
@@ -54,6 +51,10 @@
     required: true
     type: text
     validation: '^https://github\.com/.+/.+$'
+  - name: target_branch
+    description: Git branch to deploy (leave empty to auto-detect default branch)
+    required: false
+    type: text
   - name: main_file
     description: Main Python file for the Streamlit application
     required: true
@@ -64,45 +65,9 @@
     required: true
     type: text
     validation: '^[a-z0-9-]+$'
-  - name: target_branch
-    description: Git branch to deploy (leave empty to auto-detect default branch)
+  - name: secrets_content
+    description: Contents of .streamlit/secrets.toml (TOML format multiline text)
     required: false
     type: text
-  - name: secrets_content
-    description: Contents of .streamlit/secrets.toml (base64 encoded)
-    required: false
-    type: securetext
-    secure: true
-  - name: region
-    description: Google Cloud region for deployment
-    required: true
-    type: select
-    values:
-    - us-central1
-    - us-east1  
-    - us-west1
-    - europe-west1
-    - europe-west4
-    - asia-southeast1
-    - asia-northeast1
-    value: us-central1
-  - name: memory
-    description: Container memory limit
-    required: false
-    type: select
-    values:
-    - 512Mi
-    - 1Gi
-    - 2Gi
-    - 4Gi
-    value: 1Gi
-  - name: cpu
-    description: Container CPU allocation
-    required: false
-    type: select  
-    values:
-    - "1"
-    - "2"
-    - "4"
-    value: "1"
+    multiline: true
   uuid: 12345678-1234-5678-9abc-123456789012

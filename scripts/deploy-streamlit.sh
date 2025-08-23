@@ -14,15 +14,15 @@ LOG_FILE="/tmp/deployment.log"
 : "${GITHUB_URL:?GITHUB_URL is required}"
 : "${MAIN_FILE:?MAIN_FILE is required}"
 : "${APP_NAME:?APP_NAME is required}"
-: "${REGION:?REGION is required}"
 : "${PROJECT_ID:?PROJECT_ID is required}"
 : "${ARTIFACT_REGISTRY:?ARTIFACT_REGISTRY is required}"
 
 # Optional environment variables
 SECRETS_CONTENT="${SECRETS_CONTENT:-}"
 TARGET_BRANCH="${TARGET_BRANCH:-}"
-MEMORY="${MEMORY:-1Gi}"
-CPU="${CPU:-1}"
+REGION="${DEFAULT_REGION:-us-central1}"
+MEMORY="${DEFAULT_MEMORY:-1Gi}"
+CPU="${DEFAULT_CPU:-1}"
 
 # Logging function
 log() {
@@ -130,9 +130,16 @@ EOF
 
 # Step 5: Create secrets file if provided
 if [[ -n "$SECRETS_CONTENT" ]]; then
-    log "Step 5: Creating secrets configuration"
-    mkdir -p .streamlit
-    echo "$SECRETS_CONTENT" | base64 -d > .streamlit/secrets.toml || error "Failed to decode secrets content"
+    # Trim leading and trailing whitespace
+    SECRETS_CONTENT=$(echo "$SECRETS_CONTENT" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    
+    if [[ -n "$SECRETS_CONTENT" ]]; then
+        log "Step 5: Creating secrets configuration"
+        mkdir -p .streamlit
+        echo "$SECRETS_CONTENT" > .streamlit/secrets.toml
+    else
+        log "Step 5: Secrets content was empty after trimming, skipping"
+    fi
 else
     log "Step 5: No secrets provided, skipping"
 fi

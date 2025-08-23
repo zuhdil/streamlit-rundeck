@@ -63,6 +63,12 @@ docker compose logs -f rundeck
 ./scripts/cleanup-workspace.sh
 ```
 
+### Updating Rundeck Job Definitions
+When modifying job files in `rundeck-config/`, update them in Rundeck via:
+1. **Web UI** (recommended): Jobs → gear icon → "Upload Definition" → choose "Update"
+2. **CLI**: `docker compose exec rundeck rd jobs load -f /rundeck-config/[file].yml --project streamlit-deployments`
+3. **Delete/Re-create**: Delete job in UI, then re-upload definition
+
 ### Accessing the Application
 - **Rundeck Web Interface**: http://localhost:4440
 - **Default Credentials**: admin/admin
@@ -111,6 +117,9 @@ Requires `.env` file with:
 - `ARTIFACT_REGISTRY_URL`: Container registry URL
 - `GITHUB_API_TOKEN`: GitHub API token with webhook permissions
 - `RUNDECK_WEBHOOK_SECRET`: Secret for webhook payload validation
+- `DEFAULT_REGION`: Default Google Cloud region (DevOps setting)
+- `DEFAULT_MEMORY`: Default container memory limit (DevOps setting)
+- `DEFAULT_CPU`: Default container CPU allocation (DevOps setting)
 
 Create from template:
 ```bash

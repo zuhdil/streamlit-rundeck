@@ -8,8 +8,8 @@ A comprehensive CI/CD platform for deploying Streamlit applications from GitHub 
 - **Automatic CI/CD**: GitHub webhooks trigger automatic redeployments on code pushes
 - **Multi-Branch Support**: Deploy different branches as separate services
 - **Flexible Branch Detection**: Auto-detect default branch or specify custom branch
-- **Secure Secrets Management**: Base64-encoded secrets injection via Rundeck
-- **Resource Configuration**: Configurable memory and CPU limits
+- **Secure Secrets Management**: Direct TOML format secrets injection via Rundeck
+- **Resource Configuration**: DevOps-managed memory and CPU defaults
 - **Access Control**: Role-based permissions for data scientists and administrators
 - **Audit Trail**: Complete deployment history and logging
 
@@ -71,6 +71,31 @@ A comprehensive CI/CD platform for deploying Streamlit applications from GitHub 
    - Upload `rundeck-config/streamlit-deploy-job.yml`
    - Repeat to upload `rundeck-config/webhook-streamlit-redeploy.yml`
 
+### Updating Job Definitions
+
+When you modify job definition files (e.g., `rundeck-config/streamlit-deploy-job.yml`), you need to update them in Rundeck:
+
+#### Option 1: Re-import through Rundeck Web UI (Recommended)
+1. **Access Rundeck**: http://localhost:4440
+2. **Navigate to Project**: Go to the `streamlit-deployments` project
+3. **Jobs Section**: Click on "Jobs" in the left sidebar
+4. **Find Existing Job**: Locate the job you want to update (e.g., "Deploy Streamlit App")
+5. **Job Actions**: Click the gear icon → "Upload Definition"
+6. **Upload File**: Select your updated job definition file
+7. **Update Strategy**: Choose "Update" to replace the existing job
+
+#### Option 2: Use Rundeck CLI (if available)
+```bash
+# From within the Rundeck container
+docker compose exec rundeck rd jobs load -f /rundeck-config/streamlit-deploy-job.yml --project streamlit-deployments
+```
+
+#### Option 3: Delete and Re-create
+1. **Delete existing job** through Rundeck UI (gear icon → "Delete this Job")
+2. **Re-import** the updated job definition file using the upload process
+
+**Note**: Option 1 is recommended as it preserves job execution history and is safer for production environments.
+
 ### Environment Variables
 
 Create a `.env` file with the following variables:
@@ -85,6 +110,11 @@ GITHUB_API_TOKEN=your-github-token
 
 # Rundeck Configuration
 RUNDECK_WEBHOOK_SECRET=your-webhook-secret
+
+# Infrastructure Defaults (DevOps Configuration)
+DEFAULT_REGION=us-central1
+DEFAULT_MEMORY=1Gi
+DEFAULT_CPU=1
 ```
 
 ## Usage
@@ -98,9 +128,9 @@ RUNDECK_WEBHOOK_SECRET=your-webhook-secret
    - **Main File**: Streamlit entry point (e.g., `app.py`)
    - **App Name**: Unique Cloud Run service name (lowercase, hyphens only)
    - **Target Branch**: Branch to deploy (leave empty for auto-detection)
-   - **Secrets**: Base64-encoded `.streamlit/secrets.toml` content (optional)
-   - **Region**: Google Cloud region
-   - **Memory/CPU**: Resource allocation
+   - **Secrets**: Direct TOML format `.streamlit/secrets.toml` content (optional)
+
+**Note**: Infrastructure settings (region, memory, CPU) are now managed by DevOps through environment variables and no longer appear in the user interface.
 
 ### Multi-Branch Deployments
 
