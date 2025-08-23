@@ -184,7 +184,7 @@ log "Service URL: $SERVICE_URL"
 # Step 8: Create GitHub webhook
 log "Step 8: Creating GitHub webhook"
 if [[ -n "${GITHUB_TOKEN:-}" ]] && [[ -n "${WEBHOOK_SECRET:-}" ]]; then
-    WEBHOOK_URL="http://localhost:4440/api/webhook/streamlit-redeploy"  # TODO: Make this configurable
+    WEBHOOK_URL="${RUNDECK_GRAILS_URL:-http://localhost:4440}/api/webhook/streamlit-redeploy"
     
     "$SCRIPT_DIR/create-webhook.sh" "$GITHUB_URL" "$TARGET_BRANCH" "$WEBHOOK_URL" "$WEBHOOK_SECRET" || {
         log "WARNING: Failed to create webhook, but deployment succeeded"
