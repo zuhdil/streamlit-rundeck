@@ -52,7 +52,12 @@ A comprehensive CI/CD platform for deploying Streamlit applications from GitHub 
 
 5. **Start the system**:
    ```bash
-   docker compose up -d
+   ./start.sh -d
+   ```
+   
+   **Alternative**: Use Docker Compose directly (requires manual Docker group ID setup):
+   ```bash
+   DOCKER_GID=$(getent group docker | cut -d: -f3) docker compose up -d
    ```
 
 6. **Access Rundeck**:
@@ -171,6 +176,8 @@ After initial deployment:
 streamlit-rundeck/
 ├── compose.yml                    # Docker Compose configuration
 ├── Dockerfile.rundeck             # Extended Rundeck image
+├── start.sh                       # Portable startup script (auto-detects Docker GID)
+├── get-docker-gid.sh             # Docker group ID detection utility
 ├── scripts/                       # Deployment and management scripts
 │   ├── deploy-streamlit.sh        # Main deployment logic
 │   ├── create-webhook.sh          # GitHub webhook creation

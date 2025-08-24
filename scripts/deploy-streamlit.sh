@@ -10,6 +10,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_BASE="/tmp/workspace"
 LOG_FILE="/tmp/deployment.log"
 
+# Map Rundeck options to environment variables if needed
+GITHUB_URL="${GITHUB_URL:-${RD_OPTION_GITHUB_URL}}"
+MAIN_FILE="${MAIN_FILE:-${RD_OPTION_MAIN_FILE}}"
+APP_NAME="${APP_NAME:-${RD_OPTION_APP_NAME}}"
+TARGET_BRANCH="${TARGET_BRANCH:-${RD_OPTION_TARGET_BRANCH}}"
+SECRETS_FILE="${SECRETS_FILE:-${RD_FILE_SECRETS_FILE}}"
+
 # Required environment variables
 : "${GITHUB_URL:?GITHUB_URL is required}"
 : "${MAIN_FILE:?MAIN_FILE is required}"
@@ -18,7 +25,6 @@ LOG_FILE="/tmp/deployment.log"
 : "${ARTIFACT_REGISTRY:?ARTIFACT_REGISTRY is required}"
 
 # Optional environment variables
-SECRETS_FILE="${SECRETS_FILE:-}"
 SECRETS_CONTENT="${SECRETS_CONTENT:-}"
 TARGET_BRANCH="${TARGET_BRANCH:-}"
 REGION="${DEFAULT_REGION:-us-central1}"
@@ -160,6 +166,14 @@ log "Step 6: Building container image"
 IMAGE_TAG="$ARTIFACT_REGISTRY/$APP_NAME:$(date +%Y%m%d-%H%M%S)"
 LATEST_TAG="$ARTIFACT_REGISTRY/$APP_NAME:latest"
 
+# Authenticate with Google Cloud using service account
+if [[ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]]; then
+    log "Authenticating with Google Cloud"
+    gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" || error "Failed to authenticate with Google Cloud"
+else
+    error "Service account credentials not found at: $GOOGLE_APPLICATION_CREDENTIALS"
+fi
+
 # Configure Docker to use gcloud for authentication
 gcloud auth configure-docker "${ARTIFACT_REGISTRY%%/*}" --quiet || error "Failed to configure Docker authentication"
 
@@ -173,20 +187,20 @@ docker push "$LATEST_TAG" || error "Failed to push latest tag: $LATEST_TAG"
 
 # Step 7: Deploy to Cloud Run
 log "Step 7: Deploying to Cloud Run"
-gcloud run deploy "$APP_NAME" \\
-    --image="$LATEST_TAG" \\
-    --platform=managed \\
-    --region="$REGION" \\
-    --allow-unauthenticated \\
-    --memory="$MEMORY" \\
-    --cpu="$CPU" \\
-    --project="$PROJECT_ID" \\
+gcloud run deploy "$APP_NAME" \
+    --image="$LATEST_TAG" \
+    --platform=managed \
+    --region="$REGION" \
+    --allow-unauthenticated \
+    --memory="$MEMORY" \
+    --cpu="$CPU" \
+    --project="$PROJECT_ID" \
     --quiet || error "Failed to deploy to Cloud Run"
 
 # Get service URL
-SERVICE_URL=$(gcloud run services describe "$APP_NAME" \\
-    --region="$REGION" \\
-    --project="$PROJECT_ID" \\
+SERVICE_URL=$(gcloud run services describe "$APP_NAME" \
+    --region="$REGION" \
+    --project="$PROJECT_ID" \
     --format="value(status.url)") || error "Failed to get service URL"
 
 log "Application deployed successfully!"
@@ -206,13 +220,13 @@ fi
 
 # Step 9: Store deployment metadata
 log "Step 9: Storing deployment metadata"
-"$SCRIPT_DIR/store-deployment.sh" \\
-    "$APP_NAME" \\
-    "$GITHUB_URL" \\
-    "$MAIN_FILE" \\
-    "$TARGET_BRANCH" \\
-    "$REGION" \\
-    "$SERVICE_URL" \\
+"$SCRIPT_DIR/store-deployment.sh" \
+    "$APP_NAME" \
+    "$GITHUB_URL" \
+    "$MAIN_FILE" \
+    "$TARGET_BRANCH" \
+    "$REGION" \
+    "$SERVICE_URL" \
     "${SECRETS_CONTENT:-}" || {
     log "WARNING: Failed to store deployment metadata"
 }

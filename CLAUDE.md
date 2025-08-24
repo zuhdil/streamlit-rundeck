@@ -16,11 +16,14 @@ This is a comprehensive CI/CD platform for deploying Streamlit applications from
 
 ### Environment Management
 ```bash
-# Start all services in detached mode
-docker compose up -d
+# Start all services in detached mode (recommended - auto-detects Docker GID)
+./start.sh -d
 
 # Start with logs visible (useful for debugging)
-docker compose up
+./start.sh
+
+# Alternative: Use Docker Compose directly (requires manual Docker GID setup)
+DOCKER_GID=$(./get-docker-gid.sh) docker compose up -d
 
 # Stop all services
 docker compose down
@@ -93,6 +96,8 @@ When modifying job files in `rundeck-config/`, update them in Rundeck via:
 streamlit-rundeck/
 ├── compose.yml                    # Docker Compose configuration
 ├── Dockerfile.rundeck             # Extended Rundeck image with required tools
+├── start.sh                       # Portable startup script (auto-detects Docker GID)
+├── get-docker-gid.sh             # Docker group ID detection utility
 ├── scripts/                       # Deployment automation scripts
 │   ├── deploy-streamlit.sh        # Main deployment logic
 │   ├── create-webhook.sh          # GitHub webhook creation

@@ -1,0 +1,38 @@
+- defaultTab: nodes
+  description: Debug environment variable passing
+  executionEnabled: true
+  id: debug-env-test
+  loglevel: INFO
+  name: Debug Environment Variables
+  nodeFilterEditable: false
+  sequence:
+    commands:
+    - description: Debug environment variables
+      exec: /scripts/debug-env.sh
+    keepgoing: false
+    strategy: node-first
+  options:
+  - name: github_url
+    description: GitHub repository URL
+    required: true
+    type: text
+    value: https://github.com/zuhdil/streamlit-test-app
+  - name: target_branch
+    description: Git branch to deploy
+    required: false
+    type: text
+  - name: main_file
+    description: Main Python file
+    required: true
+    type: text
+    value: app.py
+  - name: app_name  
+    description: App name
+    required: true
+    type: text
+    value: streamlit-test-app
+  - name: secrets_file
+    description: Upload .streamlit/secrets.toml file (optional)
+    required: false
+    type: file
+  uuid: 12345678-1234-5678-9abc-123456789013

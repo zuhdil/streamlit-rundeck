@@ -174,6 +174,7 @@ gcloud iam service-accounts list --filter="email:$SA_NAME@"
    - `Artifact Registry Writer` - Push images to Artifact Registry
    - `Service Usage Consumer` - Access to enabled APIs
    - `Storage Object Viewer` - Read access to GCS (for Cloud Run)
+   - `Service Account User` - Required to act as default compute service account during Cloud Run deployment
 
    **Optional but Recommended:**
    - `Cloud Build Editor` - For advanced build scenarios
@@ -204,6 +205,10 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:$SA_EMAIL" \
     --role="roles/storage.objectViewer"
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$SA_EMAIL" \
+    --role="roles/iam.serviceAccountUser"
 
 # Optional: Grant additional roles
 gcloud projects add-iam-policy-binding $PROJECT_ID \
@@ -344,6 +349,12 @@ gcloud config get-value project
 gcloud projects get-iam-policy $PROJECT_ID \
     --flatten="bindings[].members" \
     --filter="bindings.members:$SA_EMAIL"
+
+# Common Cloud Run permission error fix
+# If you get "Permission 'iam.serviceaccounts.actAs' denied", add Service Account User role:
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$SA_EMAIL" \
+    --role="roles/iam.serviceAccountUser"
 ```
 
 **2. API Not Enabled Errors**

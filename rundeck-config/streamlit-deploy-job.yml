@@ -37,12 +37,6 @@
         echo "All parameters validated successfully"
     - description: Execute Streamlit deployment
       exec: /scripts/deploy-streamlit.sh
-      env:
-        GITHUB_URL: ${option.github_url}
-        MAIN_FILE: ${option.main_file}
-        SECRETS_FILE: ${option.secrets_file}
-        APP_NAME: ${option.app_name}
-        TARGET_BRANCH: ${option.target_branch}
     keepgoing: false
     strategy: node-first
   options:
