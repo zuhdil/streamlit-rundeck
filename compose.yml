@@ -51,6 +51,7 @@ services:
       - ./templates:/templates:ro
       - ./sql:/sql:ro
       - ./gcloud/service-account.json:/etc/rundeck/service-account.json:ro
+      - ./config/realm.properties:/home/rundeck/server/config/realm.properties:ro
       - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:

@@ -7,6 +7,17 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# Load environment variables from .env file
+if [[ -f .env ]]; then
+    echo "📄 Loading environment variables from .env..."
+    export $(grep -v '^#' .env | xargs)
+else
+    echo "⚠️  Warning: .env file not found. Please create one based on .env.example"
+    if [[ -f .env.example ]]; then
+        echo "💡 Hint: cp .env.example .env && nano .env"
+    fi
+fi
+
 echo "🚀 Starting Streamlit-Rundeck Deployment System"
 
 # Detect Docker group ID if not already set
@@ -19,13 +30,12 @@ else
     echo "✅ Using provided Docker GID: $DOCKER_GID"
 fi
 
-# Check if .env file exists
-if [[ ! -f .env ]]; then
-    echo "⚠️  Warning: .env file not found. Please create one based on .env.example"
-    if [[ -f .env.example ]]; then
-        echo "💡 Hint: cp .env.example .env && nano .env"
-    fi
-fi
+# Generate realm.properties from template
+echo "🔐 Configuring Rundeck admin password..."
+mkdir -p config
+RUNDECK_ADMIN_PASSWORD="${RUNDECK_ADMIN_PASSWORD:-admin}"
+sed "s/RUNDECK_ADMIN_PASSWORD_PLACEHOLDER/$RUNDECK_ADMIN_PASSWORD/" config/realm.properties.template > config/realm.properties
+echo "✅ Admin password configured"
 
 # Start services
 echo "🐳 Starting Docker services..."

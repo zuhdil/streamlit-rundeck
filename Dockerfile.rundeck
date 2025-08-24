@@ -38,6 +38,7 @@ RUN groupdel docker || true && \
     groupadd -g ${DOCKER_GID} docker && \
     usermod -aG docker rundeck
 
+
 # Declare workspace as a volume
 VOLUME ["/tmp/workspace"]
 
