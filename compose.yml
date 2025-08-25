@@ -29,7 +29,8 @@ services:
       db:
         condition: service_healthy
     environment:
-      RUNDECK_GRAILS_URL: http://localhost:4440
+      RUNDECK_GRAILS_URL: ${BASE_URL:-http://localhost:4440}
+      BASE_URL: ${BASE_URL:-http://localhost:4440}
       RUNDECK_DATABASE_DRIVER: org.postgresql.Driver
       RUNDECK_DATABASE_URL: jdbc:postgresql://db:5432/rundeck
       RUNDECK_DATABASE_USERNAME: rundeck

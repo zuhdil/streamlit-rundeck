@@ -76,6 +76,10 @@ A comprehensive CI/CD platform for deploying Streamlit applications from GitHub 
    - Upload `rundeck-config/streamlit-deploy-job.yml`
    - Repeat to upload `rundeck-config/webhook-streamlit-redeploy.yml`
 
+9. **Configure webhooks for automatic redeployment**:
+   - Follow the [Webhook Setup Guide](docs/WEBHOOK-SETUP.md) to configure Rundeck webhooks
+   - This enables automatic redeployment when code is pushed to GitHub
+
 ### Updating Job Definitions
 
 When you modify job definition files (e.g., `rundeck-config/streamlit-deploy-job.yml`), you need to update them in Rundeck:
@@ -154,11 +158,13 @@ Each deployment:
 
 ### Automatic Redeployment
 
-After initial deployment:
-1. GitHub webhook is automatically created
-2. Code pushes to the target branch trigger redeployment
+After initial deployment and webhook configuration:
+1. GitHub webhook is automatically created during deployment
+2. Code pushes to the target branch trigger automatic redeployment
 3. Application is automatically updated with new code
 4. No manual intervention required
+
+For detailed webhook configuration instructions, see the [Webhook Setup Guide](docs/WEBHOOK-SETUP.md).
 
 ## Architecture
 
@@ -236,6 +242,7 @@ The system uses PostgreSQL tables for deployment tracking:
 1. **Docker build failures**: Check requirements.txt and Dockerfile generation
 2. **Cloud Run deployment errors**: Verify service account permissions
 3. **Webhook not triggering**: Check GitHub token permissions and webhook configuration
+   - See the [Webhook Setup Guide](docs/WEBHOOK-SETUP.md) for detailed troubleshooting
 4. **Database connection errors**: Ensure PostgreSQL is running and accessible
 
 ### Logs

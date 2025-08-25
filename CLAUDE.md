@@ -10,7 +10,7 @@ This is a comprehensive CI/CD platform for deploying Streamlit applications from
 - **PostgreSQL**: Database backend for deployment metadata (version 17)
 - **Google Cloud SDK**: Cloud Run and Artifact Registry integration
 - **Docker**: Container runtime for building Streamlit applications
-- **GitHub Integration**: Webhook-based continuous deployment
+- **GitHub Integration**: Rundeck webhook-based continuous deployment
 
 ## Common Commands
 
@@ -72,6 +72,12 @@ When modifying job files in `rundeck-config/`, update them in Rundeck via:
 2. **CLI**: `docker compose exec rundeck rd jobs load -f /rundeck-config/[file].yml --project streamlit-deployments`
 3. **Delete/Re-create**: Delete job in UI, then re-upload definition
 
+### Webhook Configuration
+After loading job definitions, configure webhooks for automatic redeployment:
+- See `docs/WEBHOOK-SETUP.md` for complete webhook setup instructions
+- Configure Rundeck webhooks via the web UI to enable GitHub integration
+- Add WEBHOOK_AUTH_KEY to .env after creating webhooks
+
 ### Accessing the Application
 - **Rundeck Web Interface**: http://localhost:4440
 - **Default Credentials**: admin/admin
@@ -87,6 +93,7 @@ When modifying job files in `rundeck-config/`, update them in Rundeck via:
 
 ### Key Integrations
 - **GitHub API**: Repository cloning, webhook creation and management
+- **Rundeck Webhooks**: Native webhook handling for GitHub integration
 - **Google Artifact Registry**: Container image storage
 - **Google Cloud Run**: Application hosting platform
 - **Docker Registry**: Local container building and pushing
@@ -107,6 +114,7 @@ streamlit-rundeck/
 │   └── validate-*.sh              # Input validation scripts
 ├── templates/                     # Dockerfile templates for Streamlit apps
 ├── rundeck-config/                # Rundeck job definitions and access control
+├── docs/                         # Documentation including webhook setup guide
 ├── sql/                          # Database schema for deployment tracking
 └── gcloud/                       # Service account credentials
 ```
@@ -122,6 +130,8 @@ Requires `.env` file with:
 - `ARTIFACT_REGISTRY_URL`: Container registry URL
 - `GITHUB_API_TOKEN`: GitHub API token with webhook permissions
 - `RUNDECK_WEBHOOK_SECRET`: Secret for webhook payload validation
+- `WEBHOOK_AUTH_KEY`: Auth key for Rundeck webhook URLs (obtained after creating webhooks)
+- `BASE_URL`: Base URL for Rundeck instance (used for webhook URL generation)
 - `DEFAULT_REGION`: Default Google Cloud region (DevOps setting)
 - `DEFAULT_MEMORY`: Default container memory limit (DevOps setting)
 - `DEFAULT_CPU`: Default container CPU allocation (DevOps setting)
@@ -156,8 +166,9 @@ cp .env.example .env
 1. **Initial Deployment**: User submits job through Rundeck interface
 2. **Repository Processing**: Code cloned, Dockerfile generated, container built
 3. **Cloud Deployment**: Image pushed to registry, deployed to Cloud Run
-4. **Webhook Setup**: GitHub webhook created for target branch
-5. **Continuous Deployment**: Code pushes trigger automatic redeployments
+4. **Webhook Setup**: GitHub webhook created pointing to Rundeck webhook endpoint
+5. **Webhook Configuration**: Rundeck webhooks must be configured via web UI (see `docs/WEBHOOK-SETUP.md`)
+6. **Continuous Deployment**: Code pushes trigger Rundeck webhook jobs for automatic redeployments
 
 ## Git Commit Guidelines
 
