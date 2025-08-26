@@ -8,7 +8,7 @@ A comprehensive CI/CD platform for deploying Streamlit applications from GitHub 
 - **Automatic CI/CD**: GitHub webhooks trigger automatic redeployments on code pushes
 - **Multi-Branch Support**: Deploy different branches as separate services
 - **Flexible Branch Detection**: Auto-detect default branch or specify custom branch
-- **Secure Secrets Management**: Direct TOML format secrets injection via Rundeck
+- **Secure Secrets Management**: Secure secrets file upload via Rundeck
 - **Resource Configuration**: DevOps-managed memory and CPU defaults
 - **Access Control**: Role-based permissions for data scientists and administrators
 - **Audit Trail**: Complete deployment history and logging
@@ -146,7 +146,7 @@ DEFAULT_CPU=1
    - **Main File**: Streamlit entry point (e.g., `app.py`)
    - **App Name**: Unique Cloud Run service name (lowercase, hyphens only)
    - **Target Branch**: Branch to deploy (leave empty for auto-detection)
-   - **Secrets**: Direct TOML format `.streamlit/secrets.toml` content (optional)
+   - **Secrets File**: Upload `.streamlit/secrets.toml` file (optional)
 
 **Note**: Infrastructure settings (region, memory, CPU) are now managed by DevOps through environment variables and no longer appear in the user interface.
 
