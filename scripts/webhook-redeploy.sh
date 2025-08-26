@@ -46,8 +46,18 @@ log "Payload status: ${#PAYLOAD} characters received"
 
 log "Processing webhook payload"
 
-# Step 1: Parse payload
+# Step 1: Parse payload and detect event type
 log "Step 1: Parsing webhook payload"
+
+# Check for GitHub ping event
+ZEN_MESSAGE=$(echo "$PAYLOAD" | jq -r '.zen // empty')
+if [[ -n "$ZEN_MESSAGE" ]]; then
+    log "GitHub ping event detected: $ZEN_MESSAGE"
+    log "Webhook endpoint is alive and responding correctly"
+    echo '{"status": "success", "message": "Webhook ping acknowledged", "zen": "'"$ZEN_MESSAGE"'"}'
+    exit 0
+fi
+
 REPO_URL=$(echo "$PAYLOAD" | jq -r '.repository.clone_url // empty')
 REPO_FULL_NAME=$(echo "$PAYLOAD" | jq -r '.repository.full_name // empty')
 PUSHED_BRANCH=$(echo "$PAYLOAD" | jq -r '.ref // empty' | sed 's|refs/heads/||')
@@ -59,7 +69,7 @@ log "Branch: $PUSHED_BRANCH"
 log "Commit: $COMMIT_SHA"
 log "Pusher: $PUSHER_NAME"
 
-# Validate required fields
+# Validate required fields for push events
 [[ -n "$REPO_URL" ]] || error "Missing repository URL in payload"
 [[ -n "$PUSHED_BRANCH" ]] || error "Missing branch information in payload"
 
