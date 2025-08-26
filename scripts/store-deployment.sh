@@ -25,12 +25,8 @@ error() {
 
 log "Storing deployment metadata for: $APP_NAME"
 
-# Database connection parameters
-DB_HOST="${RUNDECK_DATABASE_URL:-jdbc:postgresql://db:5432/rundeck}"
-DB_HOST=$(echo "$DB_HOST" | sed 's|jdbc:postgresql://||' | sed 's|:.*||')
-DB_NAME="rundeck"
-DB_USER="${RUNDECK_DATABASE_USERNAME:-rundeck}"
-DB_PASS="${RUNDECK_DATABASE_PASSWORD:-rundeckpassword}"
+# Load database connection parameters
+source "$(dirname "${BASH_SOURCE[0]}")/db-connection.sh"
 
 # Get webhook ID if it exists
 WEBHOOK_ID=""

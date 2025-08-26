@@ -18,11 +18,8 @@ error() {
     exit 1
 }
 
-# Database connection parameters (use portable environment variables)
-DB_HOST="${DB_HOST:-db}"
-DB_NAME="${DB_NAME:-rundeck}"
-DB_USER="${DB_USER:-rundeck}"
-DB_PASS="${DB_PASSWORD:-rundeckpassword}"
+# Load database connection parameters
+source "$(dirname "${BASH_SOURCE[0]}")/db-connection.sh"
 
 # Normalize GitHub URL (handle both with and without .git suffix)
 NORMALIZED_URL="${GITHUB_URL%%.git}"

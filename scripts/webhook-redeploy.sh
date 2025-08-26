@@ -18,19 +18,8 @@ error() {
     exit 1
 }
 
-# Debug: Show script execution
-echo "=== WEBHOOK SCRIPT STARTED ==="
-echo "Script: $0"
-echo "Args: $*"
-echo "Working directory: $(pwd)"
-
 # Webhook payload should be passed as environment variable, option, or stdin
 PAYLOAD="${WEBHOOK_PAYLOAD:-${RD_OPTION_WEBHOOK_PAYLOAD:-}}"
-
-# Debug: Show payload reception
-echo "DEBUG: WEBHOOK_PAYLOAD environment variable: ${WEBHOOK_PAYLOAD:-<unset>}"
-echo "DEBUG: RD_OPTION_WEBHOOK_PAYLOAD: ${RD_OPTION_WEBHOOK_PAYLOAD:-<unset>}"
-echo "DEBUG: Final payload length: ${#PAYLOAD} characters"
 
 # Skip null values
 if [[ "$PAYLOAD" == "null" ]]; then

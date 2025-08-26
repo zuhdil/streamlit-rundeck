@@ -16,12 +16,8 @@ error() {
     exit 1
 }
 
-# Database connection parameters
-DB_HOST="${RUNDECK_DATABASE_URL:-jdbc:postgresql://db:5432/rundeck}"
-DB_HOST=$(echo "$DB_HOST" | sed 's|jdbc:postgresql://||' | sed 's|:.*||')
-DB_NAME="rundeck"
-DB_USER="${RUNDECK_DATABASE_USERNAME:-rundeck}"
-DB_PASS="${RUNDECK_DATABASE_PASSWORD:-rundeckpassword}"
+# Load database connection parameters
+source "$(dirname "${BASH_SOURCE[0]}")/db-connection.sh"
 
 log "Initializing deployment tracking database schema"
 log "Database host: $DB_HOST"
