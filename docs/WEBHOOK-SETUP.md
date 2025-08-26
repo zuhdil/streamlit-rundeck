@@ -150,6 +150,8 @@ Add the complete webhook URL to your environment:
      - ✅ `200`: Webhook successful
      - ❌ `4xx/5xx`: Check Rundeck logs for errors
 
+**Note**: GitHub periodically sends "ping" events to test webhook endpoints. These are automatically handled and will show as successful executions with a "zen" message in the logs.
+
 ## Troubleshooting
 
 ### Common Issues
@@ -201,7 +203,7 @@ Add the complete webhook URL to your environment:
 
 - **Auth Key Protection**: Keep webhook auth keys secure - they allow job execution
 - **Network Access**: Ensure webhook URLs are only accessible to GitHub's IP ranges if possible
-- **Signature Validation**: Always validate webhook signatures to prevent unauthorized triggers
+- **Webhook URL Security**: Rundeck webhook URLs contain authentication tokens that provide secure access
 - **Job Permissions**: Webhook jobs run with specific user permissions - ensure appropriate access controls
 
 ## Next Steps

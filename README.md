@@ -226,7 +226,7 @@ The system uses PostgreSQL tables for deployment tracking:
 
 ### Security Features
 
-- Webhook payload signature validation
+- Webhook authentication via Rundeck auth keys
 - GitHub API token with minimal permissions
 - Service account principle of least privilege
 - Secure secrets handling through Rundeck
