@@ -99,41 +99,9 @@ if [[ ! -f "$MAIN_FILE" ]]; then
     error "Main file '$MAIN_FILE' not found in repository"
 fi
 
-# Step 4: Generate Dockerfile
-log "Step 4: Generating Dockerfile"
-cat > Dockerfile << EOF
-FROM python:3.9-slim
-
-WORKDIR /app
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \\
-    curl \\
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements first for better caching
-COPY requirements.txt* ./
-RUN if [ -f requirements.txt ]; then pip install --no-cache-dir -r requirements.txt; fi
-
-# Install streamlit if not in requirements
-RUN pip install --no-cache-dir streamlit
-
-# Copy application code
-COPY . .
-
-# Create streamlit directory
-RUN mkdir -p .streamlit
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \\
-    CMD curl --fail http://localhost:8080/_stcore/health || exit 1
-
-# Expose port
-EXPOSE 8080
-
-# Run streamlit
-CMD ["streamlit", "run", "$MAIN_FILE", "--server.port=8080", "--server.address=0.0.0.0", "--server.headless=true"]
-EOF
+# Step 4: Generate Dockerfile from template
+log "Step 4: Generating Dockerfile from template"
+sed "s/{MAIN_FILE}/$MAIN_FILE/g" "$SCRIPT_DIR/../templates/streamlit.dockerfile.template" > Dockerfile
 
 # Step 5: Process secrets (from file upload or direct content)
 if [[ -n "$SECRETS_FILE" ]] && [[ -f "$SECRETS_FILE" ]]; then
