@@ -20,9 +20,4 @@
     required: false
     type: text
     secure: false
-  - name: webhook_signature
-    description: GitHub webhook signature header (X-Hub-Signature-256)
-    required: false
-    type: text
-    secure: true
   uuid: 87654321-4321-8765-cba9-876543210987

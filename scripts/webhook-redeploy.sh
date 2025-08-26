@@ -46,23 +46,8 @@ log "Payload status: ${#PAYLOAD} characters received"
 
 log "Processing webhook payload"
 
-# Step 1: Validate webhook signature
-log "Step 1: Validating webhook signature"
-# Try to get signature from various sources
-GITHUB_SIGNATURE="${HTTP_X_HUB_SIGNATURE_256:-${RD_OPTION_WEBHOOK_SIGNATURE:-}}"
-
-if [[ -n "${WEBHOOK_SECRET:-}" ]] && [[ -n "$GITHUB_SIGNATURE" ]]; then
-    EXPECTED_SIGNATURE="sha256=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" -binary | xxd -p -c 256)"
-    if [[ "$GITHUB_SIGNATURE" != "$EXPECTED_SIGNATURE" ]]; then
-        error "Invalid webhook signature"
-    fi
-    log "Webhook signature validated"
-else
-    log "WARNING: Webhook signature validation skipped (missing secret or signature)"
-fi
-
-# Step 2: Parse payload
-log "Step 2: Parsing webhook payload"
+# Step 1: Parse payload
+log "Step 1: Parsing webhook payload"
 REPO_URL=$(echo "$PAYLOAD" | jq -r '.repository.clone_url // empty')
 REPO_FULL_NAME=$(echo "$PAYLOAD" | jq -r '.repository.full_name // empty')
 PUSHED_BRANCH=$(echo "$PAYLOAD" | jq -r '.ref // empty' | sed 's|refs/heads/||')
@@ -78,8 +63,8 @@ log "Pusher: $PUSHER_NAME"
 [[ -n "$REPO_URL" ]] || error "Missing repository URL in payload"
 [[ -n "$PUSHED_BRANCH" ]] || error "Missing branch information in payload"
 
-# Step 3: Lookup deployment metadata
-log "Step 3: Looking up deployment metadata"
+# Step 2: Lookup deployment metadata
+log "Step 2: Looking up deployment metadata"
 DEPLOYMENT_INFO=$("$SCRIPT_DIR/get-deployment.sh" "$REPO_URL" "$PUSHED_BRANCH" 2>/dev/null || echo "")
 
 if [[ -z "$DEPLOYMENT_INFO" ]]; then
@@ -98,8 +83,8 @@ SECRETS_CONTENT=$(echo "$DEPLOYMENT_INFO" | grep "^SECRETS_CONTENT=" | cut -d= -
 log "Found deployment: $APP_NAME"
 log "Target branch: $TARGET_BRANCH"
 
-# Step 4: Filter by branch
-log "Step 4: Checking branch filter"
+# Step 3: Filter by branch
+log "Step 3: Checking branch filter"
 if [[ "$PUSHED_BRANCH" != "$TARGET_BRANCH" ]]; then
     log "Push to branch '$PUSHED_BRANCH' does not match target branch '$TARGET_BRANCH'"
     log "Ignoring this webhook"
@@ -108,8 +93,8 @@ fi
 
 log "Branch matches target, proceeding with redeployment"
 
-# Step 5: Execute redeployment
-log "Step 5: Starting automatic redeployment"
+# Step 4: Execute redeployment
+log "Step 4: Starting automatic redeployment"
 log "Triggering redeployment for $APP_NAME from commit $COMMIT_SHA"
 
 export GITHUB_URL="$REPO_URL"

@@ -53,17 +53,11 @@ docker compose logs -f rundeck
 # Test deployment script directly
 ./scripts/deploy-streamlit.sh
 
-# Validate webhook payload
-./scripts/validate-webhook.sh
-
 # Initialize database schema
 ./scripts/init-database.sh
 
 # Check deployment metadata
 ./scripts/get-deployment.sh
-
-# Clean up workspace
-./scripts/cleanup-workspace.sh
 ```
 
 ### Updating Rundeck Job Definitions
