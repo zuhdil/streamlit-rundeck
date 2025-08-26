@@ -18,21 +18,53 @@ error() {
     exit 1
 }
 
-# Webhook payload should be passed as environment variable or stdin
-PAYLOAD="${WEBHOOK_PAYLOAD:-}"
-if [[ -z "$PAYLOAD" ]] && [[ ! -t 0 ]]; then
-    PAYLOAD=$(cat)
+# Debug: Show script execution
+echo "=== WEBHOOK SCRIPT STARTED ==="
+echo "Script: $0"
+echo "Args: $*"
+echo "Working directory: $(pwd)"
+
+# Webhook payload should be passed as environment variable, option, or stdin
+PAYLOAD="${WEBHOOK_PAYLOAD:-${RD_OPTION_WEBHOOK_PAYLOAD:-}}"
+
+# Debug: Show payload reception
+echo "DEBUG: WEBHOOK_PAYLOAD environment variable: ${WEBHOOK_PAYLOAD:-<unset>}"
+echo "DEBUG: RD_OPTION_WEBHOOK_PAYLOAD: ${RD_OPTION_WEBHOOK_PAYLOAD:-<unset>}"
+echo "DEBUG: Final payload length: ${#PAYLOAD} characters"
+
+# Skip null values
+if [[ "$PAYLOAD" == "null" ]]; then
+    PAYLOAD=""
 fi
 
-[[ -n "$PAYLOAD" ]] || error "No webhook payload provided"
+if [[ -z "$PAYLOAD" ]] && [[ ! -t 0 ]]; then
+    PAYLOAD=$(cat 2>/dev/null || echo "")
+fi
+
+# Try to get payload from webhook context files if available
+if [[ -z "$PAYLOAD" ]] && [[ -f "/tmp/webhook_data.json" ]]; then
+    PAYLOAD=$(cat "/tmp/webhook_data.json")
+fi
+
+# If we still don't have payload, try to construct a minimal one from environment
+if [[ -z "$PAYLOAD" ]]; then
+    log "WARNING: No webhook payload found, attempting to construct minimal payload from environment"
+    # This is a fallback - webhook won't work without proper repository info
+    PAYLOAD='{"repository":{"clone_url":"unknown"},"ref":"refs/heads/main"}'
+fi
+
+log "Payload status: ${#PAYLOAD} characters received"
 
 log "Processing webhook payload"
 
 # Step 1: Validate webhook signature
 log "Step 1: Validating webhook signature"
-if [[ -n "${WEBHOOK_SECRET:-}" ]] && [[ -n "${HTTP_X_HUB_SIGNATURE_256:-}" ]]; then
+# Try to get signature from various sources
+GITHUB_SIGNATURE="${HTTP_X_HUB_SIGNATURE_256:-${RD_OPTION_WEBHOOK_SIGNATURE:-}}"
+
+if [[ -n "${WEBHOOK_SECRET:-}" ]] && [[ -n "$GITHUB_SIGNATURE" ]]; then
     EXPECTED_SIGNATURE="sha256=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" -binary | xxd -p -c 256)"
-    if [[ "$HTTP_X_HUB_SIGNATURE_256" != "$EXPECTED_SIGNATURE" ]]; then
+    if [[ "$GITHUB_SIGNATURE" != "$EXPECTED_SIGNATURE" ]]; then
         error "Invalid webhook signature"
     fi
     log "Webhook signature validated"

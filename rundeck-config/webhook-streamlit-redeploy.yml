@@ -11,21 +11,13 @@
   sequence:
     commands:
     - description: Process webhook payload and trigger redeployment
-      exec: |
-        echo "Processing GitHub webhook for automatic redeployment..."
-        
-        # Set webhook payload from job context or environment
-        export WEBHOOK_PAYLOAD="${option.webhook_payload}"
-        export HTTP_X_HUB_SIGNATURE_256="${option.webhook_signature}"
-        
-        # Execute webhook redeployment script
-        /scripts/webhook-redeploy.sh
+      exec: /scripts/webhook-redeploy.sh
     keepgoing: false
     strategy: node-first
   options:
   - name: webhook_payload
     description: GitHub webhook JSON payload
-    required: true
+    required: false
     type: text
     secure: false
   - name: webhook_signature

@@ -35,38 +35,31 @@ First, ensure the webhook job is loaded in Rundeck:
    - Click **"Create Webhook"** or **"Add Webhook"**
    - Fill in the webhook configuration:
 
-### Basic Configuration
+### General Tab Configuration
 
 | Field | Value | Description |
 |-------|-------|-------------|
 | **Name** | `streamlit-redeploy` | Descriptive name for the webhook |
-| **Trigger** | `Run Job` | Select this option to trigger a job execution |
-| **Job** | `Webhook Streamlit Redeploy` | Select the imported webhook job |
+| **User** | (leave blank) | Username for authorization (optional) |
+| **Roles** | (leave blank) | Authorization roles (optional) |
+| **Enabled** | ✅ Checked | Webhook must be enabled to function |
 
-### Advanced Configuration (if available)
+**HTTP Authorization String**: Leave "Use Authorization Header" unchecked unless you need additional security.
+
+### Handler Configuration Tab
+
+Switch to the **"Handler Configuration"** tab and configure:
 
 | Field | Value | Description |
 |-------|-------|-------------|
-| **Authentication** | `None` or `Basic` | Leave as None for GitHub webhooks |
-| **Content Type** | `application/json` | Ensures JSON payload processing |
-| **Enabled** | ✅ Checked | Webhook must be enabled to function |
+| **Plugin** | `Run Job` | Select this handler type |
+| **Job** | `Webhook Streamlit Redeploy (streamlit-deployments)` | Click "Choose A Job" and select the webhook job |
+| **Options** | `-webhook_payload ${raw}` | **Critical**: Use ${raw} for proper JSON payload handling |
+| **Node Filter** | (leave blank) | Leave blank for default |
+| **As User** | (leave blank) | Username to run job as (optional) |
 
-3. **Configure Job Parameters (Important)**
-   
-   The webhook needs to map GitHub payload data to job options:
-
-   **For webhook_payload option:**
-   - **Source**: `Webhook JSON Data`
-   - **JSONPath**: `$` (entire payload)
-   - **Description**: Maps the complete GitHub webhook payload
-
-   **For webhook_signature option:**
-   - **Source**: `Header Value`  
-   - **Header Name**: `X-Hub-Signature-256`
-   - **Description**: GitHub webhook signature for validation
-
-4. **Save the Webhook**
-   - Click **"Create"** or **"Save"**
+3. **Save the Webhook**
+   - Click **"Save"** button (top right)
    - The webhook will be created and you'll see a confirmation
 
 ## Step 3: Get the Webhook URL
@@ -75,23 +68,23 @@ After creating the webhook, Rundeck will generate a unique URL:
 
 1. **Find the Webhook URL**
    - In the Webhooks list, click on your created webhook
-   - Copy the **"Post URL"** - it will look like:
+   - Copy the complete **"Post URL"** - it will look like:
      ```
-     https://your-domain.com/api/19/webhook/abc123def456/webhook-streamlit-redeploy
+     https://your-domain.com/api/53/webhook/1yd5iB2TlCRiD91psA7wKdnnBvoSLQs#streamlit-redeploy
      ```
 
-2. **Extract the Auth Key**
-   - From the URL above, the auth key is the part after `/webhook/` and before the next `/`
-   - In this example: `abc123def456`
+2. **Copy the Complete URL**
+   - Copy the entire URL exactly as shown in the Post URL field
+   - The format is: `https://your-domain.com/api/{version}/webhook/{auth-key}#{webhook-name}`
 
 ## Step 4: Update Environment Configuration
 
-Add the webhook auth key to your environment:
+Add the complete webhook URL to your environment:
 
 1. **Update .env file**
    ```bash
-   # Add this line to your .env file
-   WEBHOOK_AUTH_KEY=abc123def456
+   # Add this line to your .env file (use your actual webhook URL)
+   WEBHOOK_URL=https://your-domain.com/api/53/webhook/1yd5iB2TlCRiD91psA7wKdnnBvoSLQs#streamlit-redeploy
    ```
 
 2. **Restart Services**
@@ -164,7 +157,17 @@ Add the webhook auth key to your environment:
 **Webhook not triggering:**
 - Verify webhook URL is correct in GitHub
 - Check that webhook job is enabled in Rundeck
-- Ensure WEBHOOK_AUTH_KEY matches the generated URL
+- Ensure WEBHOOK_URL matches the exact URL from Rundeck UI
+
+**Job fails with "Option 'webhook_payload' is required", "Failed to substitute data", or webhook_payload shows as 'null':**
+- Use the working configuration: `-webhook_payload ${raw}` in the Options field
+- If ${raw} doesn't work, try these alternatives in order:
+  1. **Leave Options field completely empty** - Rundeck may pass data via stdin or environment
+  2. Try: `-webhook_payload ${data}` (alternative variable name)
+  3. Try: `-webhook_payload ${webhook.data}` (older format)
+  4. Check Rundeck version - some versions have different webhook variable formats
+- The webhook job will now handle the null payload case and provide better error messages
+- Re-edit the webhook in Rundeck UI and verify the Handler Configuration tab
 
 **Job fails with "No deployment found":**
 - The repository must be deployed via the main job first
@@ -185,13 +188,13 @@ Add the webhook auth key to your environment:
    curl -X POST \
      -H "Content-Type: application/json" \
      -d '{"ref":"refs/heads/main","repository":{"clone_url":"https://github.com/test/repo.git"}}' \
-     https://your-domain.com/api/19/webhook/your-auth-key/webhook-streamlit-redeploy
+     https://your-domain.com/api/53/webhook/your-auth-key#streamlit-redeploy
    ```
 
 3. **Verify Environment Variables**
    ```bash
-   # Check if auth key is loaded
-   docker compose exec rundeck env | grep WEBHOOK
+   # Check if webhook URL is loaded
+   docker compose exec rundeck env | grep WEBHOOK_URL
    ```
 
 ## Security Considerations

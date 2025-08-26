@@ -76,7 +76,8 @@ When modifying job files in `rundeck-config/`, update them in Rundeck via:
 After loading job definitions, configure webhooks for automatic redeployment:
 - See `docs/WEBHOOK-SETUP.md` for complete webhook setup instructions
 - Configure Rundeck webhooks via the web UI to enable GitHub integration
-- Add WEBHOOK_AUTH_KEY to .env after creating webhooks
+- Add WEBHOOK_URL to .env after creating webhooks (copy exact URL from Rundeck UI)
+- **Critical**: Use `-webhook_payload ${raw}` in the Options field for proper JSON payload handling
 
 ### Accessing the Application
 - **Rundeck Web Interface**: http://localhost:4440
@@ -130,8 +131,13 @@ Requires `.env` file with:
 - `ARTIFACT_REGISTRY_URL`: Container registry URL
 - `GITHUB_API_TOKEN`: GitHub API token with webhook permissions
 - `RUNDECK_WEBHOOK_SECRET`: Secret for webhook payload validation
-- `WEBHOOK_AUTH_KEY`: Auth key for Rundeck webhook URLs (obtained after creating webhooks)
+- `RUNDECK_ADMIN_PASSWORD`: Admin password for Rundeck login
+- `WEBHOOK_URL`: Complete Rundeck webhook URL (copy from Rundeck UI after creating webhooks)
 - `BASE_URL`: Base URL for Rundeck instance (used for webhook URL generation)
+- `DB_HOST`: Database host (default: db)
+- `DB_NAME`: Database name (default: rundeck)  
+- `DB_USER`: Database username (default: rundeck)
+- `DB_PASSWORD`: Database password (default: rundeckpassword)
 - `DEFAULT_REGION`: Default Google Cloud region (DevOps setting)
 - `DEFAULT_MEMORY`: Default container memory limit (DevOps setting)
 - `DEFAULT_CPU`: Default container CPU allocation (DevOps setting)

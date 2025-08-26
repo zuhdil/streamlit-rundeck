@@ -119,6 +119,15 @@ GITHUB_API_TOKEN=your-github-token
 
 # Rundeck Configuration
 RUNDECK_WEBHOOK_SECRET=your-webhook-secret
+RUNDECK_ADMIN_PASSWORD=your-admin-password
+BASE_URL=http://localhost:4440
+WEBHOOK_URL=https://your-domain.com/api/53/webhook/your-auth-key#streamlit-redeploy
+
+# Database Configuration (optional - uses defaults if not specified)
+DB_HOST=db
+DB_NAME=rundeck
+DB_USER=rundeck
+DB_PASSWORD=rundeckpassword
 
 # Infrastructure Defaults (DevOps Configuration)
 DEFAULT_REGION=us-central1
@@ -166,6 +175,8 @@ After initial deployment and webhook configuration:
 
 For detailed webhook configuration instructions, see the [Webhook Setup Guide](docs/WEBHOOK-SETUP.md).
 
+**Important**: When configuring webhooks in the Rundeck UI, use `-webhook_payload ${raw}` in the Options field to ensure proper JSON payload handling.
+
 ## Architecture
 
 ### Components
@@ -193,6 +204,7 @@ streamlit-rundeck/
 │   └── validate-*.sh              # Input validation scripts
 ├── templates/                     # Dockerfile templates
 ├── rundeck-config/                # Rundeck job and access control
+├── docs/                         # Documentation including webhook setup guide
 ├── sql/                          # Database schema
 └── gcloud/                       # Service account keys
 ```

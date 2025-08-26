@@ -15,7 +15,7 @@ GITHUB_URL="${GITHUB_URL:-${RD_OPTION_GITHUB_URL}}"
 MAIN_FILE="${MAIN_FILE:-${RD_OPTION_MAIN_FILE}}"
 APP_NAME="${APP_NAME:-${RD_OPTION_APP_NAME}}"
 TARGET_BRANCH="${TARGET_BRANCH:-${RD_OPTION_TARGET_BRANCH}}"
-SECRETS_FILE="${SECRETS_FILE:-${RD_FILE_SECRETS_FILE}}"
+SECRETS_FILE="${SECRETS_FILE:-${RD_FILE_SECRETS_FILE:-}}"
 
 # Required environment variables
 : "${GITHUB_URL:?GITHUB_URL is required}"
@@ -210,9 +210,13 @@ log "Service URL: $SERVICE_URL"
 log "Step 8: Creating GitHub webhook"
 if [[ -n "${GITHUB_TOKEN:-}" ]] && [[ -n "${WEBHOOK_SECRET:-}" ]]; then
     # Use Rundeck's built-in webhook API
-    # Note: WEBHOOK_AUTH_KEY should be set after creating webhook in Rundeck UI
-    WEBHOOK_AUTH_KEY="${WEBHOOK_AUTH_KEY:-PLACEHOLDER_AUTH_KEY}"
-    WEBHOOK_URL="${BASE_URL:-http://localhost:4440}/api/19/webhook/$WEBHOOK_AUTH_KEY/webhook-streamlit-redeploy"
+    # Note: WEBHOOK_URL should be copied from Rundeck UI after creating webhook
+    if [[ -n "${WEBHOOK_URL:-}" ]]; then
+        log "Using configured webhook URL: $WEBHOOK_URL"
+    else
+        log "WARNING: WEBHOOK_URL not configured, using placeholder"
+        WEBHOOK_URL="${BASE_URL:-http://localhost:4440}/api/webhook/placeholder"
+    fi
     
     "$SCRIPT_DIR/create-webhook.sh" "$GITHUB_URL" "$TARGET_BRANCH" "$WEBHOOK_URL" "$WEBHOOK_SECRET" || {
         log "WARNING: Failed to create webhook, but deployment succeeded"

@@ -31,15 +31,22 @@ services:
     environment:
       RUNDECK_GRAILS_URL: ${BASE_URL:-http://localhost:4440}
       BASE_URL: ${BASE_URL:-http://localhost:4440}
+      # Database connection for scripts (non-RUNDECK_ prefixed)
+      DB_HOST: db
+      DB_NAME: rundeck
+      DB_USER: rundeck
+      DB_PASSWORD: rundeckpassword
+      # Rundeck database configuration (uses same values)
       RUNDECK_DATABASE_DRIVER: org.postgresql.Driver
-      RUNDECK_DATABASE_URL: jdbc:postgresql://db:5432/rundeck
-      RUNDECK_DATABASE_USERNAME: rundeck
-      RUNDECK_DATABASE_PASSWORD: rundeckpassword
+      RUNDECK_DATABASE_URL: jdbc:postgresql://${DB_HOST:-db}:5432/${DB_NAME:-rundeck}
+      RUNDECK_DATABASE_USERNAME: ${DB_USER:-rundeck}
+      RUNDECK_DATABASE_PASSWORD: ${DB_PASSWORD:-rundeckpassword}
       GOOGLE_APPLICATION_CREDENTIALS: /etc/rundeck/service-account.json
       PROJECT_ID: ${GCP_PROJECT_ID:-}
       ARTIFACT_REGISTRY: ${ARTIFACT_REGISTRY_URL:-}
       GITHUB_TOKEN: ${GITHUB_API_TOKEN:-}
       WEBHOOK_SECRET: ${RUNDECK_WEBHOOK_SECRET:-}
+      WEBHOOK_URL: ${WEBHOOK_URL:-}
       DEFAULT_REGION: ${DEFAULT_REGION:-us-central1}
       DEFAULT_MEMORY: ${DEFAULT_MEMORY:-1Gi}
       DEFAULT_CPU: ${DEFAULT_CPU:-1}

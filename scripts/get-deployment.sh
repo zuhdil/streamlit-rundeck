@@ -18,17 +18,20 @@ error() {
     exit 1
 }
 
-# Database connection parameters  
-DB_HOST="${RUNDECK_DATABASE_URL:-jdbc:postgresql://db:5432/rundeck}"
-DB_HOST=$(echo "$DB_HOST" | sed 's|jdbc:postgresql://||' | sed 's|/.*||')
-DB_NAME="rundeck"
-DB_USER="${RUNDECK_DATABASE_USERNAME:-rundeck}"
-DB_PASS="${RUNDECK_DATABASE_PASSWORD:-rundeckpassword}"
+# Database connection parameters (use portable environment variables)
+DB_HOST="${DB_HOST:-db}"
+DB_NAME="${DB_NAME:-rundeck}"
+DB_USER="${DB_USER:-rundeck}"
+DB_PASS="${DB_PASSWORD:-rundeckpassword}"
 
-# Prepare SQL with compound key filter
+# Normalize GitHub URL (handle both with and without .git suffix)
+NORMALIZED_URL="${GITHUB_URL%%.git}"
+NORMALIZED_URL_WITH_GIT="${NORMALIZED_URL}.git"
+
+# Prepare SQL with compound key filter (check both URL formats)
 SQL="SELECT app_name, github_url, main_file, target_branch, region, secrets_content, webhook_id, cloud_run_url 
      FROM deployments 
-     WHERE github_url = '$GITHUB_URL' 
+     WHERE (github_url = '$GITHUB_URL' OR github_url = '$NORMALIZED_URL' OR github_url = '$NORMALIZED_URL_WITH_GIT')
        AND target_branch = '$TARGET_BRANCH'
      LIMIT 1;"
 
